@@ -10,6 +10,7 @@ import {
   TerminalIcon,
 } from "lucide-react"
 import { CandyButton } from "@/components/candy-button"
+import { BrandLogo } from "@/components/brand-logos"
 import { PopCard, PopCardEyebrow } from "@/components/pop-card"
 import {
   BlobCircle,
@@ -64,7 +65,7 @@ const SHADOW_BY_TONE: Record<"violet" | "pink" | "amber" | "mint", "violet" | "p
 
 export default function Landing() {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col bg-background text-foreground overflow-x-hidden">
       {/* ───────── Header ───────── */}
       <header className="px-6 py-5 border-b-2 border-foreground bg-background">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -148,18 +149,21 @@ export default function Landing() {
                   </Link>
                 </CandyButton>
               </div>
-              <div className="flex items-center gap-4 pt-4 text-sm text-muted-foreground">
-                <span className="font-mono uppercase tracking-widest text-[10px]">listening on</span>
-                <span className="flex flex-wrap gap-2">
+              <div className="flex flex-col gap-3 pt-2">
+                <span className="text-xs text-muted-foreground font-semibold">Listening on</span>
+                <div className="flex flex-wrap gap-3">
                   {["Vercel", "Sentry", "UptimeRobot", "Slack"].map((s) => (
-                    <span
+                    <div
                       key={s}
-                      className="rounded-full border-2 border-foreground bg-card px-2.5 py-0.5 text-xs font-mono font-semibold"
+                      className="group relative flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-foreground/30 bg-card shadow-[3px_3px_0_0_rgba(0,0,0,0.15)] transition-shadow hover:shadow-[3px_3px_0_0_rgba(0,0,0,0.25)]"
                     >
-                      {s}
-                    </span>
+                      <BrandLogo name={s} className="h-8 w-8" />
+                      <span className="pointer-events-none absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-display font-bold opacity-0 transition-opacity group-hover:opacity-100">
+                        {s}
+                      </span>
+                    </div>
                   ))}
-                </span>
+                </div>
               </div>
             </div>
 
