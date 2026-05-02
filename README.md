@@ -6,7 +6,7 @@
 
 BlameBot is an autonomous on-call agent that closes the loop from deploy failure to resolved incident — without waking up your whole team at 3 AM. It ingests alerts from Vercel, Sentry, and UptimeRobot, uses AI to explain what broke and who owns it, pages the right person via Slack, and can roll back the deployment automatically.
 
-**[Live Demo →](https://blamebot.vercel.app)** · **[GitHub →](https://github.com/VusalHuseynov/blamebot)**
+**[Live Demo](https://blamebot.vercel.app)** · **[GitHub](https://github.com/VusalHuseynov/blamebot)**
 
 ---
 
