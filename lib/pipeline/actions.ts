@@ -6,7 +6,8 @@ import { openDraftHotfixPR } from "../github"
 import { postReply } from "../slack/post"
 
 export async function rollback(incident: Incident, actor: { id: string; name: string }): Promise<Incident> {
-  const result = await rollbackProject(incident.commit?.sha ? undefined : undefined)
+  const deploymentId = incident.source === "vercel" ? incident.externalId : undefined
+  const result = await rollbackProject(deploymentId)
   const msg = result.ok
     ? `:white_check_mark: Rolled back${result.simulated ? " (simulated — set VERCEL_API_TOKEN to enable real rollback)" : ""}${
         result.rolledBackTo ? ` to ${result.rolledBackTo.url}` : ""

@@ -47,12 +47,12 @@ export async function rollbackProject(currentDeploymentId?: string): Promise<Rol
     const candidate = list.deployments.find((d) => d.uid !== currentDeploymentId)
     if (!candidate) return { ok: false, simulated: false, error: "no previous deployment found" }
 
-    const promoteRes = await fetch(`${BASE}/v13/deployments/${candidate.uid}/promote${teamQuery()}`, {
+    const rollbackRes = await fetch(`${BASE}/v13/deployments/${candidate.uid}/rollback${teamQuery()}`, {
       method: "POST",
-      headers,
+      headers: { ...headers, "Content-Type": "application/json" },
     })
-    if (!promoteRes.ok && promoteRes.status !== 201 && promoteRes.status !== 200) {
-      return { ok: false, simulated: false, error: `promote failed ${promoteRes.status}` }
+    if (!rollbackRes.ok && rollbackRes.status !== 201 && rollbackRes.status !== 200) {
+      return { ok: false, simulated: false, error: `rollback failed ${rollbackRes.status}` }
     }
     return {
       ok: true,

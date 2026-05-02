@@ -1,5 +1,7 @@
 # BlameBot — AI-Powered Incident Intelligence
 
+![BlameBot](./assets/image.png)
+
 > **Vercel Zero to Agent Hackathon submission** · Solo · Deployed on Vercel
 
 BlameBot is an autonomous on-call agent that closes the loop from deploy failure to resolved incident — without waking up your whole team at 3 AM. It ingests alerts from Vercel, Sentry, and UptimeRobot, uses AI to explain what broke and who owns it, pages the right person via Slack, and can roll back the deployment automatically.
@@ -18,6 +20,18 @@ Every on-call rotation has the same failure loop:
 4. Team manually writes a postmortem (or doesn't)
 
 BlameBot collapses that 40-minute scramble into a 10-second AI summary with one-click rollback.
+
+---
+
+## Built for Vercel Zero to Agent Hackathon
+
+This project was built as a solo submission for the [Vercel Zero to Agent Hackathon](https://community.vercel.com/hackathons/zero-to-agent) (April 24 – May 3, 2025).
+
+**Why BlameBot fits the "Zero to Agent" theme:**
+
+- It is a genuine autonomous agent, not a chatbot. It receives a signal, reasons about it, takes action, and reports back — all without human involvement.
+- The agent loop spans multiple tools: GitHub for code context, Vercel API for rollback actions, Slack for communication, and Claude for reasoning.
+- Autopilot mode lets it close the full loop: detect → analyze → act → report — zero human steps required.
 
 ---
 
@@ -109,7 +123,7 @@ When enabled, BlameBot can automatically roll back a failing deployment via the 
 |---|---|
 | Framework | Next.js 16 (App Router) |
 | UI | React 19, Tailwind CSS v4, shadcn/ui |
-| AI | Vercel AI SDK 6, Claude Sonnet (Anthropic) |
+| AI | Vercel AI SDK 6, Claude Sonnet (Anthropic) — chosen over OpenAI for superior technical root cause reasoning |
 | Database | Upstash Redis |
 | Integrations | Vercel API, GitHub (Octokit), Slack |
 | Charts | Recharts |
@@ -289,7 +303,7 @@ The included `vercel.json` configures a daily escalation cron:
   "crons": [
     {
       "path": "/api/cron/escalations",
-      "schedule": "0 0 * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }
@@ -355,18 +369,6 @@ blamebot/
 ├── components/           # React components
 └── vercel.json           # Cron job config
 ```
-
----
-
-## Built for Vercel Zero to Agent Hackathon
-
-This project was built as a solo submission for the [Vercel Zero to Agent Hackathon](https://community.vercel.com/hackathons/zero-to-agent) (April 24 – May 3, 2025).
-
-**Why BlameBot fits the "Zero to Agent" theme:**
-
-- It is a genuine autonomous agent, not a chatbot. It receives a signal, reasons about it, takes action, and reports back — all without human involvement.
-- The agent loop spans multiple tools: GitHub for code context, Vercel API for rollback actions, Slack for communication, and Claude for reasoning.
-- Autopilot mode lets it close the full loop: detect → analyze → act → report — zero human steps required.
 
 ---
 

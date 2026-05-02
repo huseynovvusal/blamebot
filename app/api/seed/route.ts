@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { kv } from "@/lib/kv"
 import { incidentId, eventId, messageId } from "@/lib/ids"
-import type { AIReport, Incident, Owner, Severity, OwnerRule } from "@/lib/types"
+import type { AIReport, Incident, Owner, Severity, OwnerRule, Postmortem } from "@/lib/types"
 import { isAdminFromCookies } from "@/lib/admin-auth"
 
 export const runtime = "nodejs"
@@ -32,6 +32,7 @@ const DEMO_INCIDENTS: Array<{
   service: string
   files: string[]
   resolvedAfterMs?: number
+  hasPostmortem?: boolean
   ai: AIReport
   responsibleSlackIds: string[]
 }> = [
@@ -131,6 +132,84 @@ const DEMO_INCIDENTS: Array<{
       confidence: "medium",
     },
     responsibleSlackIds: ["U_TOM"],
+  },
+  {
+    hoursAgo: 52, // ~2 days ago
+    severity: "P2",
+    source: "sentry",
+    title: "ReferenceError: localStorage is not defined in SSR context",
+    errorMessage: "ReferenceError: localStorage is not defined\n  at ThemeProvider:12",
+    service: "frontend",
+    files: ["components/theme-provider.tsx", "app/(pages)/layout.tsx"],
+    resolvedAfterMs: 25 * 60_000,
+    hasPostmortem: true,
+    ai: {
+      rootCause:
+        "`ThemeProvider` accesses `localStorage` at module init time — runs in the Node.js SSR pass where `localStorage` doesn't exist. Introduced in PR #501 which moved theme init to a top-level statement.",
+      blastRadius: "All server-rendered pages returned 500 for ~25 minutes during the afternoon deploy.",
+      recommendedAction: "Guard `localStorage` access with `typeof window !== 'undefined'` or move it inside a `useEffect`.",
+      recommendedActionType: "hotfix",
+      historicalContext: "First SSR-related incident in the last 30 days.",
+      confidence: "high",
+    },
+    responsibleSlackIds: ["U_MAYA"],
+  },
+  {
+    hoursAgo: 72, // 3 days ago
+    severity: "P3",
+    source: "sentry",
+    title: "Warning flood: Each child in a list should have a unique key prop",
+    errorMessage: "Warning: Each child in a list should have a unique 'key' prop. Check the render method of `IncidentList`.",
+    service: "frontend",
+    files: ["components/incident-list.tsx"],
+    resolvedAfterMs: 40 * 60_000,
+    ai: {
+      rootCause: "PR #498 refactored `IncidentList` to use index-based keys after switching to a virtual list library.",
+      blastRadius: "No user-facing breakage, but React reconciliation is degraded on large incident lists.",
+      recommendedAction: "Replace index keys with stable incident IDs in `components/incident-list.tsx`.",
+      recommendedActionType: "hotfix",
+      historicalContext: "First occurrence.",
+      confidence: "high",
+    },
+    responsibleSlackIds: ["U_DIEGO"],
+  },
+  {
+    hoursAgo: 97, // ~4 days ago
+    severity: "P3",
+    source: "vercel",
+    title: "Build warning: Image missing alt text in 6 components",
+    errorMessage: "Build succeeded with warnings: img elements require alt text (jsx-a11y/alt-text) in 6 files",
+    service: "frontend",
+    files: ["components/avatar.tsx", "components/integration-badge.tsx"],
+    resolvedAfterMs: 15 * 60_000,
+    ai: {
+      rootCause: "PR #495 added several `<img>` elements without `alt` attributes, tripping the a11y lint rule.",
+      blastRadius: "No runtime impact. Accessibility regression affects screen reader users.",
+      recommendedAction: "Add descriptive `alt` text to all new `<img>` elements in the flagged files.",
+      recommendedActionType: "hotfix",
+      historicalContext: "Two prior a11y warnings in the last 30 days — both resolved same day.",
+      confidence: "high",
+    },
+    responsibleSlackIds: ["U_SARAH"],
+  },
+  {
+    hoursAgo: 145, // ~6 days ago
+    severity: "P3",
+    source: "uptime",
+    title: "Intermittent 503s on /api/analytics",
+    errorMessage: "Monitor reported degraded — HTTP 503 intermittent (3/5 checks failed)",
+    service: "api",
+    files: ["app/api/analytics/route.ts"],
+    resolvedAfterMs: 55 * 60_000,
+    ai: {
+      rootCause: "Analytics route runs a full Redis scan on every request; under concurrent load the scan blocks the event loop long enough to trip Vercel's 10s function timeout.",
+      blastRadius: "Analytics dashboard returned 503 for ~1 hour during business hours. No data loss.",
+      recommendedAction: "Cache the analytics aggregation result in Redis with a 60s TTL instead of computing on every request.",
+      recommendedActionType: "investigate",
+      historicalContext: "First incident on `/api/analytics` in the last 30 days.",
+      confidence: "medium",
+    },
+    responsibleSlackIds: ["U_JEN"],
   },
   // Generate 25 more incidents spread across different days/hours for meaningful heatmap
   // Risk pattern: more incidents on Friday afternoons, fewer overnight/weekends
@@ -342,6 +421,30 @@ export async function POST(req: NextRequest) {
     }
     await kv.incidents.put(inc)
     created.push(inc.id)
+
+    if (d.hasPostmortem && inc.status === "resolved") {
+      const postmortem: Postmortem = {
+        incidentId: inc.id,
+        generatedAt: inc.resolvedAt!,
+        summary: `${inc.title} caused a ${inc.severity} outage lasting ${Math.round((d.resolvedAfterMs ?? 0) / 60_000)} minutes. Root cause was identified and a hotfix was deployed.`,
+        rootCause: d.ai.rootCause,
+        timelineMarkdown: `- **${new Date(inc.createdAt).toISOString()}** — Incident detected via ${d.source}\n- **${inc.acknowledgedAt}** — Acknowledged by ${inc.responsibleDevs[0]?.name ?? "on-call"}\n- **${inc.resolvedAt}** — Resolved after hotfix deployed`,
+        whatWentWell: [
+          "Incident was detected automatically within seconds.",
+          "Responsible developer acknowledged within the escalation window.",
+          "Fix was scoped and deployed without a rollback.",
+        ],
+        whatWentWrong: [
+          "Change was not caught by existing test suite.",
+          "No staging environment parity check before deploy.",
+        ],
+        actionItems: [
+          { owner: inc.responsibleDevs[0]?.name ?? "team", description: "Add SSR guard test to CI pipeline", dueInDays: 7 },
+          { owner: "platform", description: "Enable staging → production parity lint check", dueInDays: 14 },
+        ],
+      }
+      await kv.postmortems.put(postmortem)
+    }
   }
 
   // Devscores rollup
