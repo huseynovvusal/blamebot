@@ -296,7 +296,7 @@ settings:
 
 BlameBot is built for Vercel. Push to your repo and connect the project.
 
-The included `vercel.json` configures a daily escalation cron:
+The included `vercel.json` configures the escalation cron:
 
 ```json
 {
@@ -308,6 +308,8 @@ The included `vercel.json` configures a daily escalation cron:
   ]
 }
 ```
+
+> **Note:** Vercel Hobby accounts are limited to daily cron jobs. The repo ships with `0 0 * * *` (once per day) to stay within the free tier. Upgrade to Pro and change the schedule to `*/5 * * * *` for every-5-minute escalation checks.
 
 Set all environment variables in the Vercel dashboard under Settings → Environment Variables.
 
