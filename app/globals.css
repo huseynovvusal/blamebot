@@ -1,0 +1,272 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/*
+ * BlameBot — Playful Geometric Design System
+ * Stable grid, wild decoration. Cream paper, hard shadows, varied radii, rotational color.
+ *
+ * Color roles (mapped to shadcn tokens so primitives still work):
+ *   primary    = vivid violet  (brand, primary CTAs, nav)
+ *   secondary  = soft slate    (muted card, neutral surfaces)
+ *   accent     = amber/yellow  (decoration, P2 warnings, hover fills)
+ *   destructive= hot pink      (P1 incidents, blame, alerts)
+ *   success    = mint emerald  (resolved, healthy)
+ *   info       = bright cyan   (acknowledged, in-flight)
+ */
+
+:root {
+  /* Surfaces */
+  --background: oklch(0.99 0.013 95);          /* warm cream #FFFDF5 */
+  --foreground: oklch(0.32 0.04 260);          /* slate-800 #1E293B */
+  --card: oklch(1 0 0);                        /* pure white */
+  --card-foreground: oklch(0.32 0.04 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.32 0.04 260);
+
+  /* Brand + roles */
+  --primary: oklch(0.62 0.22 295);             /* violet #8B5CF6 */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.013 250);          /* slate-100 #F1F5F9 */
+  --secondary-foreground: oklch(0.32 0.04 260);
+  --muted: oklch(0.96 0.013 250);
+  --muted-foreground: oklch(0.5 0.04 260);     /* slate-500 #64748B */
+  --accent: oklch(0.86 0.16 88);               /* amber #FBBF24 */
+  --accent-foreground: oklch(0.32 0.04 260);
+  --destructive: oklch(0.74 0.18 350);         /* hot pink #F472B6 */
+  --destructive-foreground: oklch(0.32 0.04 260);
+  --success: oklch(0.78 0.16 162);             /* mint #34D399 */
+  --info: oklch(0.78 0.13 220);                /* bright sky */
+  --warning: oklch(0.86 0.16 88);              /* amber */
+
+  /* Borders / inputs / focus */
+  --border: oklch(0.32 0.04 260);              /* chunky DARK borders are signature */
+  --border-soft: oklch(0.9 0.013 250);         /* slate-200 — subtle dividers */
+  --input: oklch(1 0 0);
+  --ring: oklch(0.62 0.22 295);
+
+  /* Charts — rotational confetti palette */
+  --chart-1: oklch(0.62 0.22 295);   /* violet */
+  --chart-2: oklch(0.74 0.18 350);   /* pink */
+  --chart-3: oklch(0.86 0.16 88);    /* amber */
+  --chart-4: oklch(0.78 0.16 162);   /* mint */
+  --chart-5: oklch(0.78 0.13 220);   /* sky */
+
+  /* Sidebar mirror surfaces */
+  --sidebar: oklch(0.97 0.02 95);
+  --sidebar-foreground: oklch(0.32 0.04 260);
+  --sidebar-primary: oklch(0.62 0.22 295);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.93 0.02 95);
+  --sidebar-accent-foreground: oklch(0.32 0.04 260);
+  --sidebar-border: oklch(0.32 0.04 260);
+  --sidebar-ring: oklch(0.62 0.22 295);
+
+  /* Geometry */
+  --radius: 1rem;                 /* 16px / md */
+  --pop-shadow: 4px 4px 0 0 oklch(0.32 0.04 260);
+  --pop-shadow-lg: 6px 6px 0 0 oklch(0.32 0.04 260);
+  --pop-shadow-sm: 2px 2px 0 0 oklch(0.32 0.04 260);
+}
+
+/* Dark mode kept as a courtesy; app forces light. */
+.dark {
+  --background: oklch(0.18 0.04 260);
+  --foreground: oklch(0.97 0.02 95);
+  --card: oklch(0.22 0.04 260);
+  --card-foreground: oklch(0.97 0.02 95);
+  --popover: oklch(0.22 0.04 260);
+  --popover-foreground: oklch(0.97 0.02 95);
+  --primary: oklch(0.7 0.22 295);
+  --primary-foreground: oklch(0.18 0.04 260);
+  --secondary: oklch(0.27 0.04 260);
+  --secondary-foreground: oklch(0.97 0.02 95);
+  --muted: oklch(0.27 0.04 260);
+  --muted-foreground: oklch(0.7 0.04 260);
+  --accent: oklch(0.86 0.16 88);
+  --accent-foreground: oklch(0.18 0.04 260);
+  --destructive: oklch(0.74 0.18 350);
+  --destructive-foreground: oklch(0.18 0.04 260);
+  --success: oklch(0.78 0.16 162);
+  --info: oklch(0.78 0.13 220);
+  --warning: oklch(0.86 0.16 88);
+  --border: oklch(0.97 0.02 95);
+  --border-soft: oklch(0.35 0.04 260);
+  --input: oklch(0.27 0.04 260);
+  --ring: oklch(0.7 0.22 295);
+}
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    /* Default soft border so generic shadcn pieces don't get full chunky borders unless asked. */
+    border-color: var(--border-soft);
+    outline-color: color-mix(in oklch, var(--ring) 50%, transparent);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ───────────────────────────── Pop / sticker primitives ───────────────────────────── */
+
+.pop-shadow {
+  box-shadow: var(--pop-shadow);
+  transition: box-shadow 250ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pop-shadow:hover {
+  box-shadow: var(--pop-shadow-lg);
+  transform: translate(-2px, -2px);
+}
+.pop-shadow:active {
+  box-shadow: var(--pop-shadow-sm);
+  transform: translate(2px, 2px);
+}
+.pop-shadow-static {
+  box-shadow: var(--pop-shadow);
+}
+.pop-shadow-lg-static {
+  box-shadow: var(--pop-shadow-lg);
+}
+
+/* Colored hard shadows for featured / decorative cards */
+.pop-shadow-pink { box-shadow: 6px 6px 0 0 var(--destructive); }
+.pop-shadow-amber { box-shadow: 6px 6px 0 0 var(--accent); }
+.pop-shadow-mint { box-shadow: 6px 6px 0 0 var(--success); }
+.pop-shadow-violet { box-shadow: 6px 6px 0 0 var(--primary); }
+
+/* Chunky 2px dark border — opt-in via class */
+.border-chunky { border: 2px solid var(--border); }
+
+/* ───────────────────────────── Decorations ───────────────────────────── */
+
+/* Dotted paper background */
+.dot-grid {
+  background-image: radial-gradient(oklch(0.32 0.04 260 / 0.12) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.dot-grid-violet {
+  background-image: radial-gradient(oklch(0.62 0.22 295 / 0.18) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+/* Diagonal stripes fill */
+.stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    oklch(0.32 0.04 260 / 0.08) 0,
+    oklch(0.32 0.04 260 / 0.08) 2px,
+    transparent 2px,
+    transparent 8px
+  );
+}
+
+/* ───────────────────────────── Animation kit ───────────────────────────── */
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 oklch(0.74 0.18 350 / 0.7); }
+  70%  { box-shadow: 0 0 0 10px oklch(0.74 0.18 350 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(0.74 0.18 350 / 0); }
+}
+.pulse-dot {
+  animation: pulse-ring 1.6s cubic-bezier(0.66, 0, 0.34, 1) infinite;
+}
+
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.8) translateY(8px); }
+  60%  { opacity: 1; transform: scale(1.05) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.pop-in {
+  animation: pop-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
+.wiggle-on-hover:hover { animation: wiggle 480ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.float-slow { animation: float-y 5s ease-in-out infinite; }
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 24s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot, .pop-in, .wiggle-on-hover, .float-slow, .spin-slow {
+    animation: none !important;
+  }
+  .pop-shadow, .pop-shadow:hover, .pop-shadow:active {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Heatmap cell hover affordance */
+.heatmap-cell { transition: outline 120ms ease; }
+.heatmap-cell:hover {
+  outline: 2px solid var(--foreground);
+  outline-offset: -2px;
+}
