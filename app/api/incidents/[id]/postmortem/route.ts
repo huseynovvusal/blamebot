@@ -7,6 +7,13 @@ import { bumpPostmortemFor } from "@/lib/pipeline/devscore"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const pm = await kv.postmortems.get(id)
+  if (!pm) return NextResponse.json({ error: "not found" }, { status: 404 })
+  return NextResponse.json({ postmortem: pm })
+}
+
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const inc = await kv.incidents.get(id)

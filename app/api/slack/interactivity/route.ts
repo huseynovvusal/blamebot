@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { verifySlackSignature } from "@/lib/hmac"
 import { kv } from "@/lib/kv"
-import { rollback, draftHotfix, markResolved } from "@/lib/pipeline/actions"
+import { rollback, draftHotfix, markResolved, acknowledge } from "@/lib/pipeline/actions"
+import { postReply } from "@/lib/slack/post"
 import { getUser } from "@/lib/slack/client"
 
 export const runtime = "nodejs"
@@ -44,6 +45,14 @@ export async function POST(req: NextRequest) {
       cfg.enabled = true
       cfg.perSeverity[incident.severity] = true
       await kv.config.autopilot.put(cfg)
+      break
+    }
+    case "acknowledge": {
+      const updated = await acknowledge(incident, userInfo)
+      await postReply(updated, {
+        actor: { id: "BlameBot", name: "BlameBot" },
+        text: `:eyes: Acknowledged by <@${userInfo.id}>`,
+      })
       break
     }
     case "resolve":

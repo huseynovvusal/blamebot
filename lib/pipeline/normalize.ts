@@ -67,6 +67,15 @@ export function normalize(raw: RawWebhook): NormalizedSeed {
 
   // UptimeRobot: monitorURL, monitorFriendlyName, alertType (1=down,2=up), alertDetails
   const isDown = String(b.alertType ?? b.alert_type ?? "1") === "1"
+  const monitorURL = (b.monitorURL as string) || (b.monitor_url as string)
+  let service = "uptime"
+  if (monitorURL) {
+    try {
+      service = new URL(monitorURL).hostname
+    } catch {
+      // malformed URL — keep default
+    }
+  }
   return {
     source: "uptime",
     externalId: String(b.monitorID ?? b.monitor_id ?? `uptime_${Date.now()}`),
@@ -75,8 +84,8 @@ export function normalize(raw: RawWebhook): NormalizedSeed {
       (b.alertDetails as string) ||
       (b.alert_details as string) ||
       (isDown ? "Monitor reported DOWN" : "Monitor reported UP"),
-    url: (b.monitorURL as string) || (b.monitor_url as string),
-    service: "uptime",
+    url: monitorURL,
+    service,
     isSiteDown: isDown,
   }
 }
