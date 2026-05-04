@@ -4,9 +4,32 @@
 
 > **Vercel Zero to Agent Hackathon submission** · Solo · Deployed on Vercel
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?logo=vercel)](https://blamebot.vercel.app)
+[![Built with Next.js](https://img.shields.io/badge/Built_with-Next.js-black?logo=next.js)](https://nextjs.org/)
+[![Upstash Redis](https://img.shields.io/badge/Database-Upstash_Redis-red)](https://upstash.com)
+[![AI by Claude](https://img.shields.io/badge/AI-Claude_3.5_Sonnet-purple)](https://anthropic.com)
+
 BlameBot is an autonomous on-call agent that closes the loop from deploy failure to resolved incident — without waking up your whole team at 3 AM. It ingests alerts from Vercel, Sentry, and UptimeRobot, uses AI to explain what broke and who owns it, pages the right person via Slack, and can roll back the deployment automatically.
 
 **[Live Demo](https://blamebot.huseynovvusal.dev)** · **[GitHub](https://github.com/huseynovvusal/blamebot)**
+
+---
+
+## Table of Contents
+- [The Problem](#the-problem)
+- [Built for Vercel Zero to Agent Hackathon](#built-for-vercel-zero-to-agent-hackathon)
+- [How It Works](#how-it-works)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Setup](#setup)
+- [Webhook Setup](#webhook-setup)
+- [Slack App Setup](#slack-app-setup)
+- [Deployment](#deployment)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -25,7 +48,7 @@ BlameBot collapses that 40-minute scramble into a 10-second AI summary with one-
 
 ## Built for Vercel Zero to Agent Hackathon
 
-This project was built as a solo submission for the [Vercel Zero to Agent Hackathon](https://community.vercel.com/hackathons/zero-to-agent) (April 24 – May 3, 2025).
+This project was built as a solo submission for the [Vercel Zero to Agent Hackathon](https://community.vercel.com/hackathons/zero-to-agent) (April 24 – May 4, 2026).
 
 **Why BlameBot fits the "Zero to Agent" theme:**
 
@@ -37,25 +60,62 @@ This project was built as a solo submission for the [Vercel Zero to Agent Hackat
 
 ## How It Works
 
-```
-Webhook (Vercel / Sentry / UptimeRobot)
-        │
-        ▼
-┌───────────────────────────────────────────────────────┐
-│                    Incident Pipeline                   │
-│                                                       │
-│  Normalize → Enrich (GitHub) → Resolve Owners         │
-│       → Decide Severity → Find Similar Incidents      │
-│       → AI Report (Claude Sonnet) → Persist (Redis)   │
-│       → Post to Slack → Schedule Escalation           │
-└───────────────────────────────────────────────────────┘
-        │
-        ▼
-  Slack alert with AI summary, blame, and action buttons
-  (Acknowledge / Rollback / Draft Hotfix PR)
-        │
-        ▼
-  Dashboard + Analytics + Postmortem
+```mermaid
+flowchart TD
+    %% Styling
+    classDef webhook fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    classDef pipeline fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef db fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef ai fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+    classDef slack fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef ui fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
+
+    %% Triggers
+    subgraph Triggers ["External Events (Webhooks)"]
+        direction LR
+        Vercel([Vercel Deploy]):::webhook
+        Sentry([Sentry Error]):::webhook
+        Uptime([UptimeRobot]):::webhook
+    end
+
+    %% Pipeline
+    subgraph Core ["Incident Pipeline (Orchestrator)"]
+        direction TB
+        N["1. Normalize Payload"]:::pipeline
+        E["2. Enrich with GitHub Data<br/>(Commits, PRs, Files)"]:::pipeline
+        R["3. Resolve Code Owners"]:::pipeline
+        Sev["4. Decide Severity"]:::pipeline
+        H["5. Find Similar Incidents"]:::pipeline
+        AI["6. Claude Sonnet AI Report<br/>(Root Cause, Blast Radius)"]:::ai
+        P[("7. Persist to Redis")]:::db
+        Dev["8. Update Developer Scores"]:::pipeline
+        S["9. Post to Slack Channel"]:::slack
+        Esc["10. Schedule Escalation"]:::pipeline
+        Health["11. Update Integration Health"]:::pipeline
+
+        N --> E --> R --> Sev --> H --> AI --> P --> Dev --> S --> Esc --> Health
+    end
+
+    %% Routing
+    Vercel --> N
+    Sentry --> N
+    Uptime --> N
+
+    %% UI & Actions
+    subgraph Presentation ["Interaction & Presentation"]
+        direction TB
+        SlackMsg>["Slack Block Kit Alert<br/>Action Buttons: Acknowledge, Rollback, Hotfix"]:::slack
+        Dash{"Next.js Dashboard<br/>Analytics, Trends & Postmortems"}:::ui
+    end
+
+    S --> SlackMsg
+    P -.-> Dash
+    SlackMsg -.-> Dash
+
+    %% Styling adjustments
+    style Triggers fill:transparent,stroke:#999,stroke-width:1px,stroke-dasharray: 5 5
+    style Core fill:transparent,stroke:#f57c00,stroke-width:2px
+    style Presentation fill:transparent,stroke:#455a64,stroke-width:1px,stroke-dasharray: 5 5
 ```
 
 ### Pipeline Steps
@@ -69,8 +129,10 @@ Webhook (Vercel / Sentry / UptimeRobot)
 | **Find Similar** | Queries Redis for incidents on the same files in the last 30 days |
 | **AI Report** | Claude Sonnet generates root cause, blast radius, recommended action |
 | **Persist** | Saves incident + timeline to Upstash Redis |
+| **Dev Scores** | Updates reliability scores for responsible developers |
 | **Post to Slack** | Sends rich Block Kit message to your incidents channel |
 | **Schedule Escalation** | Sets up timed escalation if incident goes unacknowledged |
+| **Health Check** | Stamps the last-seen time for the integration source |
 
 ---
 
@@ -374,6 +436,12 @@ blamebot/
 
 ---
 
+## Contributing
+
+Contributions are welcome! Please check out the [Contributing Guidelines](CONTRIBUTING.md) for more details.
+
+---
+
 ## License
 
-MIT
+[MIT](LICENSE)
