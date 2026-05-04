@@ -104,8 +104,8 @@ flowchart TD
     %% UI & Actions
     subgraph Presentation ["Interaction & Presentation"]
         direction TB
-        SlackMsg>["Slack Block Kit Alert<br/>Action Buttons: Acknowledge, Rollback, Hotfix"]:::slack
-        Dash{"Next.js Dashboard<br/>Analytics, Trends & Postmortems"}:::ui
+        SlackMsg["Slack Block Kit Alert<br/>Action Buttons: Acknowledge, Rollback, Hotfix"]:::slack
+        Dash["Next.js Dashboard<br/>Analytics, Trends & Postmortems"]:::ui
     end
 
     S --> SlackMsg
